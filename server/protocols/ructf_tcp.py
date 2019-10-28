@@ -5,7 +5,7 @@ from server.models import FlagStatus, SubmitResult
 from server import app, config as config_module
 from server import reloader
 
-
+ 
 
 RESPONSES = {
     FlagStatus.QUEUED: ['timeout', 'game not started', 'try again later', 'game over', 'is not up',
