@@ -11,6 +11,7 @@ CONFIG = {
     # The protocol must be a module in protocols/ directory.
     # RuCTF(E) and VolgaCTF checksystems are supported out-of-the-box.
 
+    'ENTER_FLAGS_MESSAGE': 'Enter flags',
     'SYSTEM_PROTOCOL': 'ructf_tcp',
     'SYSTEM_HOST': '127.0.0.1',
     'SYSTEM_PORT': 31337,
@@ -31,9 +32,15 @@ CONFIG = {
 
     # Password for the web interface. This key will be excluded from config
     # before sending it to farm clients.
-    'SERVER_PASSWORD': '1234',
+    'SERVER_PASSWORD': 'Vnx6JEUF',
 
     # Use authorization for API requests
     'ENABLE_API_AUTH': False,
-    'API_TOKEN': '00000000000000000000'
+    'API_TOKEN': '00000000000000000000',
+
+    # Token flag submit
+    'ENABLE_TOKEN_SUBMITTING': False,
+    'TOKEN_SUBMITTING': 'dsdfhsfdhdfhsdfh',
+    'TOKEN_SUBMITTING_MESSAGE': 'team token'
+
 }

@@ -2,6 +2,9 @@ import socket
 
 from server import app
 from server.models import FlagStatus, SubmitResult
+from server import app, config as config_module
+from server import reloader
+
 
 
 RESPONSES = {
@@ -47,7 +50,13 @@ def submit_flags(flags, config):
                                     READ_TIMEOUT)
 
     greeting = recvall(sock)
-    if b'Enter your flags' not in greeting:
+    if config['ENABLE_TOKEN_SUBMITTING']:
+        if config['TOKEN_SUBMITTING_MESSAGE'].encode() in greeting:
+            sock.sendall(b'{TOKEN_SUBMITTING}\n' % config)
+        raise Exception('Tokensystem does not greet us: {}'.format(greeting))
+
+    greeting = recvall(sock)
+    if b'{ENTER_FLAGS_MESSAGE}' not in greeting:
         raise Exception('Checksystem does not greet us: {}'.format(greeting))
 
     unknown_responses = set()
