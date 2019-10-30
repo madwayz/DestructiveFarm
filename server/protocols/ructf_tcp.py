@@ -5,7 +5,7 @@ from server.models import FlagStatus, SubmitResult
 from server import app, config as config_module
 from server import reloader
 
- 
+
 
 RESPONSES = {
     FlagStatus.QUEUED: ['timeout', 'game not started', 'try again later', 'game over', 'is not up',
@@ -44,24 +44,30 @@ def recvall(sock):
     sock.settimeout(READ_TIMEOUT)
     return b''.join(chunks)
 
+def sendall(sock, text):
+    sock.sendall(text.encode() + b'\n')
+
 
 def submit_flags(flags, config):
     sock = socket.create_connection((config['SYSTEM_HOST'], config['SYSTEM_PORT']),
                                     READ_TIMEOUT)
 
     greeting = recvall(sock)
-    if config['ENABLE_TOKEN_SUBMITTING']:
-        if config['TOKEN_SUBMITTING_MESSAGE'].encode() in greeting:
-            sock.sendall(b'{TOKEN_SUBMITTING}\n' % config)
-        raise Exception('Tokensystem does not greet us: {}'.format(greeting))
+    if config['ENABLE_TOKEN_SUBMIT']:
+        if config['TOKEN_SUBMIT_MESSAGE'] not in greeting.decode():
+            raise Exception('Tokensystem does not greet us: {}'.format(greeting))
+
+        #print('TOKEN_SUBMIT:', config["TOKEN_SUBMIT"])
+        sendall(sock, config["TOKEN_SUBMIT"])
 
     greeting = recvall(sock)
-    if b'{ENTER_FLAGS_MESSAGE}' not in greeting:
+    if config['ENTER_FLAGS_MESSAGE'] not in greeting.decode():
         raise Exception('Checksystem does not greet us: {}'.format(greeting))
 
     unknown_responses = set()
     for item in flags:
-        sock.sendall(item.flag.encode() + b'\n')
+        #print('item.flag:', item.flag)
+        sendall(sock, item.flag)
         response = recvall(sock).decode().strip()
         if response:
             response = response.splitlines()[0]
