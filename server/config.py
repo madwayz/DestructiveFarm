@@ -9,6 +9,8 @@ CONFIG = {
 
     # MESSAGE
     #'TOKEN_SUBMIT_MESSAGE': 'team token',
+
+    #   Standart FLAGS MESSAGE : 'Enter your flags'
     'ENTER_FLAGS_MESSAGE': 'Enter your flags',
 
     # This configures how and where to submit flags.
