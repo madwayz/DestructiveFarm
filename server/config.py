@@ -8,8 +8,8 @@ CONFIG = {
     'FLAG_FORMAT': r'[A-Z0-9]{31}=',
 
     # MESSAGE
-    'TOKEN_SUBMIT_MESSAGE': 'team token',
-    'ENTER_FLAGS_MESSAGE': 'Enter flags',
+    #'TOKEN_SUBMIT_MESSAGE': 'team token',
+    'ENTER_FLAGS_MESSAGE': 'Enter your flags',
 
     # This configures how and where to submit flags.
     # The protocol must be a module in protocols/ directory.
