@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import importlib
 import random
 import time
@@ -46,7 +48,7 @@ def submit_flags(flags, config):
         return list(module.submit_flags(flags, config))
     except Exception as e:
         message = '{}: {}'.format(type(e).__name__, str(e))
-        app.logger.error('Exception on submitting flags: %s', message)
+        app.logger.exception('Exception on submitting flags')
         return [SubmitResult(item.flag, FlagStatus.QUEUED, message) for item in flags]
 
 
@@ -85,3 +87,7 @@ def run_loop():
         submit_spent = time.time() - submit_start_time
         if config['SUBMIT_PERIOD'] > submit_spent:
             time.sleep(config['SUBMIT_PERIOD'] - submit_spent)
+
+
+if __name__ == "__main__":
+    run_loop()

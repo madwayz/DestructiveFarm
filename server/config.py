@@ -15,7 +15,6 @@ CONFIG = {
 
     # This configures how and where to submit flags.
     # The protocol must be a module in protocols/ directory.
-    # RuCTF(E) and VolgaCTF checksystems are supported out-of-the-box.
 
     'SYSTEM_PROTOCOL': 'ructf_tcp',
     'SYSTEM_HOST': '127.0.0.1',
@@ -28,6 +27,11 @@ CONFIG = {
     # 'SYSTEM_PROTOCOL': 'volgactf',
     # 'SYSTEM_HOST': '127.0.0.1',
 
+    # 'SYSTEM_PROTOCOL': 'forcad_tcp',
+    # 'SYSTEM_HOST': '127.0.0.1',
+    # 'SYSTEM_PORT': 31337,
+    # 'TEAM_TOKEN': 'your_secret_token',
+
     # The server will submit not more than SUBMIT_FLAG_LIMIT flags
     # every SUBMIT_PERIOD seconds. Flags received more than
     # FLAG_LIFETIME seconds ago will be skipped.
@@ -35,8 +39,8 @@ CONFIG = {
     'SUBMIT_PERIOD': 5,
     'FLAG_LIFETIME': 5 * 60,
 
-    # Password for the web interface. This key will be excluded from config
-    # before sending it to farm clients.
+    # Password for the web interface. You can use it with any login.
+    # This value will be excluded from the config before sending it to farm clients.
     'SERVER_PASSWORD': '1234',
 
     # Use authorization for API requests

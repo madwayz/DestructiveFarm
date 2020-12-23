@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+import sys
+
+assert sys.version_info >= (3, 4), 'Python < 3.4 is not supported'
+
 import argparse
 import binascii
 import itertools
@@ -10,7 +14,6 @@ import random
 import re
 import stat
 import subprocess
-import sys
 import time
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -20,14 +23,10 @@ from urllib.parse import urljoin
 from urllib.request import Request, urlopen
 
 
-if sys.version_info < (3, 4):
-    logging.critical('Support of Python < 3.4 is not implemented yet')
-    sys.exit(1)
-
 os_windows = (os.name == 'nt')
 
 
-HEADER = '''
+HEADER = r'''
  ____            _                   _   _             _____
 |  _ \  ___  ___| |_ _ __ _   _  ___| |_(_)_   _____  |  ___|_ _ _ __ _ __ ___
 | | | |/ _ \/ __| __| '__| | | |/ __| __| \ \ / / _ \ | |_ / _` | '__| '_ ` _ `
@@ -79,9 +78,10 @@ def parse_args():
 
     parser.add_argument('sploit',
                         help="Sploit executable (should take a victim's host as the first argument)")
-    parser.add_argument('--server-url', metavar='URL', default='http://farm.kolambda.com:5000',
+    parser.add_argument('-u', '--server-url', metavar='URL',
+                        default='http://farm.kolambda.com:5000',
                         help='Server URL')
-    parser.add_argument('--token', metavar='TOKEN', default='',
+    parser.add_argument('--token', metavar='TOKEN',
                         help='Farm authorization token')
     parser.add_argument('--interpreter', metavar='COMMAND',
                         help='Explicitly specify sploit interpreter (use on Windows, which doesn\'t '
@@ -135,9 +135,9 @@ SCRIPT_EXTENSIONS = {
 }
 
 
-def check_script_source(source):
+def check_script_source(source, interpreter):
     errors = []
-    if not os_windows and source[:2] != '#!':
+    if not os_windows and not interpreter and source[:2] != '#!':
         errors.append(
             'Please use shebang (e.g. {}) as the first line of your script'.format(
                 highlight('#!/usr/bin/env python3', [Style.FG_GREEN])))
@@ -166,7 +166,7 @@ def check_sploit(args):
     if is_script:
         with open(path, 'r', errors='ignore') as f:
             source = f.read()
-        errors = check_script_source(source)
+        errors = check_script_source(source, args.interpreter)
 
         if errors:
             for message in errors:
@@ -236,7 +236,7 @@ SERVER_TIMEOUT = 5
 
 def get_config(args):
     req = Request(urljoin(args.server_url, '/api/get_config'))
-    if args.token:
+    if args.token is not None:
         req.add_header('X-Token', args.token)
     with urlopen(req, timeout=SERVER_TIMEOUT) as conn:
         if conn.status != 200:
@@ -252,7 +252,7 @@ def post_flags(args, flags):
 
     req = Request(urljoin(args.server_url, '/api/post_flags'))
     req.add_header('Content-Type', 'application/json')
-    if args.token:
+    if args.token is not None:
         req.add_header('X-Token', args.token)
     with urlopen(req, data=json.dumps(data).encode(), timeout=SERVER_TIMEOUT) as conn:
         if conn.status != 200:
@@ -294,9 +294,9 @@ class FlagStorage:
                     self._flags_seen.add(item)
                     self._queue.append({'flag': item, 'team': team_name})
 
-    def pick_flags(self, count):
+    def pick_flags(self):
         with self._lock:
-            return self._queue[:count]
+            return self._queue[:]
 
     def mark_as_sent(self, count):
         with self._lock:
@@ -312,14 +312,12 @@ flag_storage = FlagStorage()
 
 
 POST_PERIOD = 5
-POST_FLAG_LIMIT = 10000
-# TODO: test that 10k flags won't lead to the hangup of the farm server
 
 
 def run_post_loop(args):
     try:
         for _ in once_in_a_period(POST_PERIOD):
-            flags_to_post = flag_storage.pick_flags(POST_FLAG_LIMIT)
+            flags_to_post = flag_storage.pick_flags()
 
             if flags_to_post:
                 try:

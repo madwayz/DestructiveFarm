@@ -1,10 +1,9 @@
+# Based on https://gist.github.com/xmikasax/90a0ce5736a4274e46b9958f836951e7
+
 import socket
 
 from server import app
 from server.models import FlagStatus, SubmitResult
-from server import app, config as config_module
-from server import reloader
-
 
 
 RESPONSES = {
@@ -12,14 +11,9 @@ RESPONSES = {
                         'no such flag'],
     FlagStatus.ACCEPTED: ['accepted', 'congrat'],
     FlagStatus.REJECTED: ['bad', 'wrong', 'expired', 'unknown', 'your own',
-                          'too old', 'not in database', 'already submitted', 'invalid flag'],
+                          'too old', 'not in database', 'already submitted', 'invalid flag',
+                          'self', 'invalid', 'already_submitted', 'team_not_found', 'too_old', 'stolen'],
 }
-# The RuCTF checksystem adds a signature to all correct flags. It returns
-# "invalid flag" verdict if the signature is invalid and "no such flag" verdict if
-# the signature is correct but the flag was not found in the checksystem database.
-#
-# The latter situation happens if a checker puts the flag to the service before putting it
-# to the checksystem database. We should resent the flag later in this case.
 
 READ_TIMEOUT = 5
 APPEND_TIMEOUT = 0.05
@@ -42,10 +36,7 @@ def recvall(sock):
             break
 
     sock.settimeout(READ_TIMEOUT)
-    return b''.join(chunks) # TODO: Удалить перевод в байты
-
-def sendall(sock, text):
-    sock.sendall(text.encode() + b'\n')
+    return b''.join(chunks)
 
 
 def submit_flags(flags, config):
@@ -53,22 +44,17 @@ def submit_flags(flags, config):
                                     READ_TIMEOUT)
 
     greeting = recvall(sock)
-    # print('ENABLE_TOKEN_SUBMIT:', config['ENABLE_TOKEN_SUBMIT'])
-    if config['ENABLE_TOKEN_SUBMIT']:
-        if config['TOKEN_SUBMIT_MESSAGE'] not in greeting.decode():
-            raise Exception('Tokensystem does not greet us: {}'.format(greeting))
-
-        # print('TOKEN_SUBMIT:', config["TOKEN_SUBMIT"])
-        sendall(sock, config["TOKEN_SUBMIT"])
-
-    greeting = recvall(sock)
-    if config['ENTER_FLAGS_MESSAGE'] not in greeting.decode():
+    if b'Welcome' not in greeting:
         raise Exception('Checksystem does not greet us: {}'.format(greeting))
+
+    sock.sendall(config['TEAM_TOKEN'].encode() + b'\n')
+    invite = recvall(sock)
+    if b'enter your flags' not in invite:
+        raise Exception('Team token seems to be invalid: {}'.format(invite))
 
     unknown_responses = set()
     for item in flags:
-        #print('item.flag:', item.flag)
-        sendall(sock, item.flag)
+        sock.sendall(item.flag.encode() + b'\n')
         response = recvall(sock).decode().strip()
         if response:
             response = response.splitlines()[0]
