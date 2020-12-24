@@ -37,7 +37,6 @@ python3 -m pip install -r requirements.txt
 ./start_server.sh
 ```
 
-<<<<<<< HEAD:docs/farm_server.md
 ### Запуск в докере:
 ```bash
 git clone https://github.com/madwayz/DestructiveFarm
@@ -52,9 +51,6 @@ git clone https://github.com/madwayz/DestructiveFarm
 cd DestructiveFarm
 docker-compose up -d
 ```
-=======
-При стандартных настройках вы можете использовать пароль `1234` и любой логин для входа.
->>>>>>> upstream/master:docs/ru/farm_server.md
 
 ## База данных флагов
 
